@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/skeleton";
 import { ThemeProvider } from "@/components/theme-provider";
 import ThemeSwitch from "@/components/theme-switch";
 import { LANGS, getLanguage } from "@/lib/i18n";
+import { resolveLoginMotionPreset } from "@/lib/server/login-motion";
 import { getServiceConfig } from "@/lib/service-url";
 import { getAllowedLanguages } from "@/lib/zitadel";
 import * as Tooltip from "@radix-ui/react-tooltip";
@@ -29,6 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const _headers = await headers();
   const { serviceConfig } = getServiceConfig(_headers);
+  const motion = resolveLoginMotionPreset(_headers.get("x-zitadel-i18n-organization") || undefined);
 
   let languages = LANGS;
   try {
@@ -52,6 +54,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               fallback={
                 <BackgroundWrapper
                   className={`bg-background-light-600 dark:bg-background-dark-600 relative flex min-h-screen flex-col justify-center`}
+                  motion={motion}
                 >
                   <div className="relative mx-auto w-full max-w-[440px] py-8">
                     <Skeleton>
@@ -67,10 +70,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <LanguageProvider>
                 <BackgroundWrapper
                   className={`bg-background-light-600 dark:bg-background-dark-600 relative flex min-h-screen flex-col justify-center`}
+                  motion={motion}
                 >
-                  <div className="relative mx-auto w-full max-w-[1100px] py-8">
+                  <div className={`login-stage login-stage--${motion} relative mx-auto w-full max-w-[1100px] py-8`}>
                     <div>{children}</div>
-                    <div className="mx-auto flex max-w-[440px] flex-row items-center justify-end space-x-4 px-4 py-4 md:max-w-full md:px-8">
+                    <div className="login-stage__controls mx-auto flex max-w-[440px] flex-row items-center justify-end space-x-4 px-4 py-4 md:max-w-full md:px-8">
                       <LanguageSwitcher languages={languages} />
                       <ThemeSwitch />
                     </div>

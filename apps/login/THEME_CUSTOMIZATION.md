@@ -107,6 +107,25 @@ NEXT_PUBLIC_THEME_APPEARANCE=material
 
 ## Advanced Customization
 
+### Organization-specific motion
+
+The login container can select one decorative motion preset per organization at runtime. Configure
+`LOGIN_MOTION_PROFILES` with ZITADEL organization IDs; a new image is not required when the mapping changes.
+
+```env
+LOGIN_MOTION_PROFILES={"default":"none","organizations":{"123456789":"aurora","987654321":"orbit"}}
+```
+
+Supported presets are `none`, `aurora`, and `orbit`. Unknown presets and malformed JSON fail closed to `none`.
+The scene choreography uses Motion for React so module assembly, SVG route drawing, signals, progress, and labels
+share one deterministic timeline instead of independent CSS animation loops. The motion layer is decorative, ignores
+pointer input, and becomes a static resolved scene when the browser requests reduced motion. Keep `default` set to
+`none` unless every organization has approved animated login artwork.
+
+The Login app receives the organization context through the existing `organization` query parameter. Ensure the
+OIDC authorization request includes an organization scope or otherwise establishes organization context before the
+login route is rendered.
+
 For more detailed customization beyond these presets, you can:
 
 1. **Custom CSS**: Add your own CSS files in the `src/styles/` directory
