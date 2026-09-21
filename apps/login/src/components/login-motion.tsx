@@ -1,71 +1,68 @@
 import type { LoginMotionPreset } from "@/lib/server/login-motion";
-import auroraImage from "../../public/motion/aurora-identity.jpg";
-import orbitImage from "../../public/motion/orbit-trust.jpg";
 
-function AuroraScene() {
+const TILE_POSITIONS = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+
+function ModuleField({ preset }: { preset: Exclude<LoginMotionPreset, "none"> }) {
   return (
-    <>
-      <img alt="" className="login-motion__image" src={auroraImage.src} />
-      <div className="login-motion__grain" />
-      <div className="login-motion__aurora-grid" />
-      <div className="login-motion__aurora-beam login-motion__aurora-beam--one" />
-      <div className="login-motion__aurora-beam login-motion__aurora-beam--two" />
-      <div className="login-motion__aurora-beam login-motion__aurora-beam--three" />
-      <div className="login-motion__aurora-horizon" />
-      <div className="login-motion__story login-motion__story--aurora">
-        <span className="login-motion__eyebrow">IDENTITY / 01</span>
-        <strong>
-          ENTER THE
-          <br />
-          SIGNAL.
-        </strong>
-        <p>A private access point shaped around your organization.</p>
-      </div>
-      <div className="login-motion__caption login-motion__caption--aurora">
-        <span>IDENTITY SIGNAL</span>
-        <strong>ACQUIRED</strong>
-      </div>
-    </>
+    <div className={`login-motion__modules login-motion__modules--${preset}`}>
+      {TILE_POSITIONS.map((position, index) => (
+        <span
+          className={`login-motion__module login-motion__module--${position}${index === 4 ? "login-motion__module--active" : ""}`}
+          key={position}
+        >
+          {index === 4 ? <i className="login-motion__mark" /> : null}
+        </span>
+      ))}
+      <span className="login-motion__signal login-motion__signal--one" />
+      <span className="login-motion__signal login-motion__signal--two" />
+      <span className="login-motion__signal login-motion__signal--three" />
+    </div>
   );
 }
 
-function OrbitScene() {
+function Scene({ preset }: { preset: Exclude<LoginMotionPreset, "none"> }) {
+  const isAurora = preset === "aurora";
+
   return (
     <>
-      <img alt="" className="login-motion__image" src={orbitImage.src} />
-      <div className="login-motion__grain" />
-      <div className="login-motion__orbit-field" />
-      <div className="login-motion__orbit-map">
-        <span className="login-motion__orbit-track login-motion__orbit-track--outer" />
-        <span className="login-motion__orbit-track login-motion__orbit-track--inner" />
-        <span className="login-motion__orbit-signal login-motion__orbit-signal--one" />
-        <span className="login-motion__orbit-signal login-motion__orbit-signal--two" />
+      <div className="login-motion__wash" />
+      <div className="login-motion__topline">
+        <span>{isAurora ? "AI WORKSPACE" : "TRUST CONTROL"}</span>
+        <span className="login-motion__topline-status">
+          <i /> {isAurora ? "READY" : "VERIFIED"}
+        </span>
       </div>
-      <div className="login-motion__orbit-node login-motion__orbit-node--one">
-        <span>01</span>
-      </div>
-      <div className="login-motion__orbit-node login-motion__orbit-node--two">
-        <span>02</span>
-      </div>
-      <div className="login-motion__orbit-node login-motion__orbit-node--three">
-        <span>03</span>
-      </div>
-      <div className="login-motion__orbit-lock">
-        <span className="login-motion__orbit-lock-ring" />
-        <span className="login-motion__orbit-lock-mark" />
-      </div>
-      <div className="login-motion__story login-motion__story--orbit">
-        <span className="login-motion__eyebrow">TRUST NETWORK / 02</span>
+      <div className="login-motion__copy">
+        <span className="login-motion__eyebrow">{isAurora ? "ORGANIZATION / A01" : "ORGANIZATION / T02"}</span>
         <strong>
-          EVERY HOP.
-          <br />
-          VERIFIED.
+          {isAurora ? (
+            <>
+              Build with intelligence.
+              <br />
+              Operate with control.
+            </>
+          ) : (
+            <>
+              Every identity.
+              <br />
+              One trusted path.
+            </>
+          )}
         </strong>
-        <p>Identity moves only through routes your organization trusts.</p>
+        <p>
+          {isAurora
+            ? "One secure workspace for enterprise agents, knowledge, and automation."
+            : "Policy-aware access that stays visible, bounded, and organization specific."}
+        </p>
       </div>
-      <div className="login-motion__caption login-motion__caption--orbit">
-        <span>TRUST ROUTE</span>
-        <strong>VERIFIED</strong>
+      <ModuleField preset={preset} />
+      <div className="login-motion__progress">
+        <span className="login-motion__progress-fill" />
+      </div>
+      <div className="login-motion__steps">
+        <span className="login-motion__step login-motion__step--one">IDENTIFY</span>
+        <span className="login-motion__step login-motion__step--two">VERIFY</span>
+        <span className="login-motion__step login-motion__step--three">ENTER</span>
       </div>
     </>
   );
@@ -78,7 +75,7 @@ export function LoginMotion({ preset }: { preset: LoginMotionPreset }) {
 
   return (
     <div aria-hidden="true" className={`login-motion login-motion--${preset}`} data-testid="login-motion">
-      {preset === "aurora" ? <AuroraScene /> : <OrbitScene />}
+      <Scene preset={preset} />
     </div>
   );
 }
