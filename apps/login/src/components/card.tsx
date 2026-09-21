@@ -54,6 +54,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
 
     return (
       <div
+        data-login-card=""
         ref={ref}
         className={clsx(
           actualBackground,

@@ -93,16 +93,164 @@ html {
 }
 
 .login-motion--aurora::before {
-  background:
-    radial-gradient(circle at 50% 48%, color-mix(in srgb, var(--theme-light-primary-300) 18%, transparent), transparent 22%),
-    linear-gradient(135deg, #f8fbff 0%, #eef5ff 44%, #faf7ff 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(238, 247, 255, 0.08) 0%,
+    rgba(238, 247, 255, 0.08) 48%,
+    rgba(239, 244, 255, 0.58) 76%
+  );
 }
 
 .login-motion--orbit::before {
-  background:
-    radial-gradient(circle at 50% 48%, rgba(118, 221, 255, 0.14), transparent 24%),
-    radial-gradient(circle at 74% 22%, rgba(120, 102, 255, 0.12), transparent 32%),
-    linear-gradient(145deg, #07111c 0%, #091727 46%, #05080f 100%);
+  background: linear-gradient(90deg, rgba(2, 7, 15, 0.72) 0%, rgba(3, 10, 20, 0.28) 46%, rgba(3, 8, 16, 0.08) 100%);
+}
+
+.login-motion__image {
+  position: absolute;
+  z-index: -3;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: login-motion-image-breathe 18s ease-in-out infinite alternate;
+}
+
+.login-motion--aurora .login-motion__image {
+  object-position: 42% center;
+}
+
+.login-motion--orbit .login-motion__image {
+  object-position: 58% center;
+  animation-direction: alternate-reverse;
+  animation-duration: 20s;
+}
+
+.login-motion__story {
+  position: absolute;
+  z-index: 2;
+  width: min(34vw, 470px);
+  animation: login-motion-story 12s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+.login-motion__story--aurora {
+  top: 18%;
+  left: 7%;
+  color: #102447;
+}
+
+.login-motion__story--orbit {
+  top: 21%;
+  right: 6%;
+  color: #eefaff;
+  text-align: right;
+}
+
+.login-motion__eyebrow {
+  display: block;
+  margin-bottom: 1.4rem;
+  font:
+    700 10px/1 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  letter-spacing: 0.28em;
+  opacity: 0.72;
+}
+
+.login-motion__story strong {
+  display: block;
+  font-family: inherit;
+  font-size: clamp(3rem, 6vw, 6.4rem);
+  font-weight: 300;
+  line-height: 0.83;
+  letter-spacing: -0.065em;
+}
+
+.login-motion__story p {
+  max-width: 320px;
+  margin-top: 1.5rem;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  opacity: 0.72;
+}
+
+.login-motion__story--orbit p {
+  margin-left: auto;
+}
+
+.login-motion__prism {
+  position: absolute;
+  z-index: 1;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.24), rgba(104, 180, 255, 0.08));
+  box-shadow:
+    inset 0 0 22px rgba(255, 255, 255, 0.32),
+    0 18px 60px rgba(48, 110, 196, 0.16);
+  backdrop-filter: blur(8px);
+}
+
+.login-motion__prism--one {
+  bottom: 9%;
+  left: 31%;
+  width: 110px;
+  height: 110px;
+  transform: rotate(24deg);
+  animation: login-motion-prism-one 12s ease-in-out infinite;
+}
+
+.login-motion__prism--two {
+  bottom: 18%;
+  left: 39%;
+  width: 54px;
+  height: 180px;
+  border-radius: 999px;
+  transform: rotate(42deg);
+  animation: login-motion-prism-two 12s ease-in-out infinite;
+}
+
+.login-stage--aurora > div:first-child {
+  transform: translateX(27%);
+}
+
+.login-stage--orbit > div:first-child {
+  transform: translateX(-27%);
+}
+
+.login-stage--aurora [data-login-card],
+.login-stage--orbit [data-login-card] {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.58) !important;
+  border-radius: 30px !important;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.28)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.18),
+    0 28px 80px rgba(16, 37, 77, 0.2) !important;
+  backdrop-filter: blur(28px) saturate(145%);
+}
+
+.login-stage--orbit [data-login-card] {
+  border-color: rgba(175, 230, 255, 0.28) !important;
+  background: linear-gradient(145deg, rgba(235, 248, 255, 0.54), rgba(205, 226, 244, 0.3)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 32px 100px rgba(0, 4, 14, 0.46),
+    0 0 0 1px rgba(75, 204, 255, 0.06) !important;
+}
+
+.login-stage--aurora [data-login-card]::before,
+.login-stage--orbit [data-login-card]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.54),
+    transparent 32%,
+    transparent 72%,
+    rgba(255, 255, 255, 0.18)
+  );
 }
 
 .login-motion__grain {
@@ -603,6 +751,64 @@ html {
   }
 }
 
+@keyframes login-motion-image-breathe {
+  from {
+    transform: scale(1.015);
+  }
+  to {
+    transform: scale(1.07) translate3d(-0.8%, -0.5%, 0);
+  }
+}
+
+@keyframes login-motion-story {
+  0%,
+  8%,
+  100% {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  20%,
+  84% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  94% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes login-motion-prism-one {
+  0%,
+  100% {
+    transform: rotate(24deg) translateY(0);
+  }
+  50% {
+    transform: rotate(32deg) translateY(-18px);
+  }
+}
+
+@keyframes login-motion-prism-two {
+  0%,
+  100% {
+    transform: rotate(42deg) translateY(0);
+  }
+  50% {
+    transform: rotate(34deg) translateY(14px);
+  }
+}
+
+@media (max-width: 980px) {
+  .login-stage--aurora > div:first-child,
+  .login-stage--orbit > div:first-child {
+    transform: translateX(0);
+  }
+
+  .login-motion__story {
+    display: none;
+  }
+}
+
 @media (max-width: 720px) {
   .login-motion__caption {
     display: none;
@@ -616,6 +822,7 @@ html {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .login-motion::before,
   .login-motion * {
     animation: none !important;
   }
@@ -632,6 +839,11 @@ html {
 
   .login-motion__caption {
     opacity: 0.72;
+    transform: none;
+  }
+
+  .login-motion__story {
+    opacity: 1;
     transform: none;
   }
 }
