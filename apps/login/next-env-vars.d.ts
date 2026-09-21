@@ -51,6 +51,12 @@ declare namespace NodeJS {
     NEXT_PUBLIC_BASE_PATH: string;
 
     /**
+     * Optional runtime JSON mapping from organization IDs to decorative login motion presets.
+     * Example: {"default":"none","organizations":{"123":"aurora","456":"orbit"}}
+     */
+    LOGIN_MOTION_PROFILES?: string;
+
+    /**
      * Optional: The application name shown in the login and invite emails
      */
     NEXT_PUBLIC_APPLICATION_NAME?: string;

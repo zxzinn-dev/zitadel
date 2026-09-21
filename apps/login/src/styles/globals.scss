@@ -74,3 +74,114 @@ html {
     background-position: -200% 0;
   }
 }
+
+.login-motion {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.login-motion__aurora {
+  position: absolute;
+  width: 70vmax;
+  height: 28vmax;
+  border-radius: 9999px;
+  opacity: 0.22;
+  filter: blur(72px);
+  mix-blend-mode: multiply;
+  animation: login-motion-aurora 18s ease-in-out infinite alternate;
+}
+
+.dark .login-motion__aurora {
+  opacity: 0.3;
+  mix-blend-mode: screen;
+}
+
+.login-motion__aurora--one {
+  top: -12%;
+  left: -18%;
+  background: var(--theme-light-primary-400);
+}
+
+.login-motion__aurora--two {
+  top: 28%;
+  right: -24%;
+  background: var(--theme-light-primary-600);
+  animation-delay: -6s;
+}
+
+.login-motion__aurora--three {
+  bottom: -18%;
+  left: 18%;
+  background: var(--theme-light-primary-300);
+  animation-delay: -12s;
+}
+
+.login-motion__orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border: 1px solid color-mix(in srgb, var(--theme-light-primary-500) 32%, transparent);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: login-motion-orbit 28s linear infinite;
+}
+
+.login-motion__orbit--outer {
+  width: min(88vw, 860px);
+  aspect-ratio: 1;
+}
+
+.login-motion__orbit--inner {
+  width: min(58vw, 560px);
+  aspect-ratio: 1;
+  animation-direction: reverse;
+  animation-duration: 20s;
+}
+
+.login-motion__planet {
+  position: absolute;
+  top: calc(50% - min(44vw, 430px));
+  left: 50%;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, var(--theme-light-primary-200), var(--theme-light-primary-600));
+  box-shadow: 0 0 80px color-mix(in srgb, var(--theme-light-primary-500) 45%, transparent);
+  animation: login-motion-planet 9s ease-in-out infinite alternate;
+}
+
+@keyframes login-motion-aurora {
+  from {
+    transform: translate3d(-8%, -6%, 0) rotate(-8deg) scale(0.92);
+  }
+  to {
+    transform: translate3d(14%, 12%, 0) rotate(10deg) scale(1.08);
+  }
+}
+
+@keyframes login-motion-orbit {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg) scaleX(1.35);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg) scaleX(1.35);
+  }
+}
+
+@keyframes login-motion-planet {
+  from {
+    transform: translate(-50%, -8px) scale(0.9);
+  }
+  to {
+    transform: translate(-50%, 12px) scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-motion * {
+    animation: none !important;
+  }
+}
