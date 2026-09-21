@@ -979,7 +979,8 @@ html {
     radial-gradient(circle at 58% 70%, var(--login-glow), transparent 34%),
     linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--login-accent) 22%, transparent) 100%);
   filter: blur(18px);
-  animation: login-workspace-wash 12s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+  animation: none;
+  transform-origin: 60% 72%;
 }
 
 .login-motion__topline {
@@ -1010,7 +1011,7 @@ html {
   border-radius: 50%;
   background: var(--login-accent);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--login-accent) 12%, transparent);
-  animation: login-workspace-status 12s ease-out infinite;
+  animation: none;
 }
 
 .login-motion__copy {
@@ -1019,7 +1020,7 @@ html {
   top: 12%;
   left: 8%;
   width: 84%;
-  animation: login-workspace-copy 12s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+  animation: none;
 }
 
 .login-motion__copy .login-motion__eyebrow {
@@ -1056,6 +1057,21 @@ html {
   transform: rotateX(58deg) rotateZ(-38deg);
   transform-style: preserve-3d;
   perspective: 900px;
+  will-change: transform;
+}
+
+.login-motion__routes {
+  position: absolute;
+  z-index: 4;
+  inset: 2%;
+  width: 94%;
+  height: 94%;
+  overflow: visible;
+  fill: none;
+  stroke: color-mix(in srgb, var(--login-accent) 55%, white);
+  stroke-linecap: round;
+  stroke-width: 0.75;
+  vector-effect: non-scaling-stroke;
 }
 
 .login-motion__module {
@@ -1073,7 +1089,8 @@ html {
     0 22px 32px rgba(47, 55, 88, 0.14),
     inset 0 0 0 1px rgba(125, 137, 172, 0.08);
   transform: translateZ(0);
-  animation: login-workspace-module 12s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+  animation: none;
+  will-change: transform, opacity;
 }
 
 .login-motion__module::after {
@@ -1122,7 +1139,6 @@ html {
     0 30px 48px var(--login-glow),
     inset 0 1px 0 rgba(255, 255, 255, 0.46);
   transform: translateZ(48px);
-  animation-name: login-workspace-module-active;
 }
 
 .login-motion__mark {
@@ -1144,22 +1160,8 @@ html {
   background: var(--login-accent);
   box-shadow: 0 0 20px var(--login-accent);
   opacity: 0;
-  animation: login-workspace-signal 12s linear infinite;
-}
-
-.login-motion__signal--one {
-  top: 12%;
-  left: 10%;
-}
-.login-motion__signal--two {
-  top: 41%;
-  left: 8%;
-  animation-delay: 0.45s;
-}
-.login-motion__signal--three {
-  top: 70%;
-  left: 9%;
-  animation-delay: 0.9s;
+  animation: none;
+  will-change: top, left, opacity, transform;
 }
 
 .login-motion__progress {
@@ -1181,7 +1183,8 @@ html {
   background: linear-gradient(90deg, var(--login-accent), var(--login-accent-soft));
   transform: scaleX(0);
   transform-origin: left;
-  animation: login-workspace-progress 12s linear infinite;
+  animation: none;
+  will-change: transform;
 }
 
 .login-motion__steps {
@@ -1202,140 +1205,15 @@ html {
 }
 
 .login-motion__step {
-  animation: login-workspace-step 12s ease-out infinite;
-}
-.login-motion__step--two {
-  animation-delay: 3.6s;
-}
-.login-motion__step--three {
-  animation-delay: 7.2s;
+  display: flex;
+  gap: 7px;
+  align-items: baseline;
+  animation: none;
 }
 
-@keyframes login-workspace-copy {
-  0%,
-  7%,
-  100% {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  17%,
-  88% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  95% {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-}
-
-@keyframes login-workspace-wash {
-  0%,
-  100% {
-    opacity: 0.68;
-    transform: translate3d(0, 4%, 0) scale(0.96);
-  }
-  54%,
-  82% {
-    opacity: 1;
-    transform: translate3d(-3%, -2%, 0) scale(1.06);
-  }
-}
-
-@keyframes login-workspace-module {
-  0%,
-  10%,
-  100% {
-    opacity: 0;
-    transform: translateZ(-18px) scale(0.9);
-  }
-  25%,
-  88% {
-    opacity: 1;
-    transform: translateZ(0) scale(1);
-  }
-  95% {
-    opacity: 0;
-    transform: translateZ(6px) scale(0.98);
-  }
-}
-
-@keyframes login-workspace-module-active {
-  0%,
-  24%,
-  100% {
-    opacity: 0;
-    transform: translateZ(4px) scale(0.88);
-  }
-  42%,
-  84% {
-    opacity: 1;
-    transform: translateZ(48px) scale(1);
-  }
-  92% {
-    opacity: 0;
-    transform: translateZ(60px) scale(1.02);
-  }
-}
-
-@keyframes login-workspace-signal {
-  0%,
-  17%,
-  72%,
-  100% {
-    opacity: 0;
-    transform: translate3d(0, 0, 30px);
-  }
-  22% {
-    opacity: 1;
-  }
-  58% {
-    opacity: 1;
-    transform: translate3d(240px, 112px, 54px);
-  }
-  68% {
-    opacity: 0;
-    transform: translate3d(265px, 125px, 54px) scale(1.8);
-  }
-}
-
-@keyframes login-workspace-progress {
-  0% {
-    transform: scaleX(0);
-  }
-  88% {
-    transform: scaleX(1);
-  }
-  92%,
-  100% {
-    opacity: 0;
-    transform: scaleX(1);
-  }
-}
-
-@keyframes login-workspace-step {
-  0%,
-  8%,
-  100% {
-    color: var(--login-muted);
-  }
-  15%,
-  28% {
-    color: var(--login-accent);
-  }
-}
-
-@keyframes login-workspace-status {
-  0%,
-  35% {
-    opacity: 0.35;
-    transform: scale(0.7);
-  }
-  48%,
-  88% {
-    opacity: 1;
-    transform: scale(1);
-  }
+.login-motion__step small {
+  font-size: 6px;
+  opacity: 0.52;
 }
 
 @media (max-width: 980px) {

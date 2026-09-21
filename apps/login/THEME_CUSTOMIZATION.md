@@ -117,8 +117,10 @@ LOGIN_MOTION_PROFILES={"default":"none","organizations":{"123456789":"aurora","9
 ```
 
 Supported presets are `none`, `aurora`, and `orbit`. Unknown presets and malformed JSON fail closed to `none`.
-The motion layer is decorative, ignores pointer input, and stops automatically when the browser requests reduced
-motion. Keep `default` set to `none` unless every organization has approved animated login artwork.
+The scene choreography uses Motion for React so module assembly, SVG route drawing, signals, progress, and labels
+share one deterministic timeline instead of independent CSS animation loops. The motion layer is decorative, ignores
+pointer input, and becomes a static resolved scene when the browser requests reduced motion. Keep `default` set to
+`none` unless every organization has approved animated login artwork.
 
 The Login app receives the organization context through the existing `organization` query parameter. Ensure the
 OIDC authorization request includes an organization scope or otherwise establishes organization context before the
