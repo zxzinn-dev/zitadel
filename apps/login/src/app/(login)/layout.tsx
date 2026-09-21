@@ -72,9 +72,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   className={`bg-background-light-600 dark:bg-background-dark-600 relative flex min-h-screen flex-col justify-center`}
                   motion={motion}
                 >
-                  <div className="relative mx-auto w-full max-w-[1100px] py-8">
+                  <div className={`login-stage login-stage--${motion} relative mx-auto w-full max-w-[1100px] py-8`}>
                     <div>{children}</div>
-                    <div className="mx-auto flex max-w-[440px] flex-row items-center justify-end space-x-4 px-4 py-4 md:max-w-full md:px-8">
+                    <div className="login-stage__controls mx-auto flex max-w-[440px] flex-row items-center justify-end space-x-4 px-4 py-4 md:max-w-full md:px-8">
                       <LanguageSwitcher languages={languages} />
                       <ThemeSwitch />
                     </div>

@@ -1,14 +1,26 @@
 import type { LoginMotionPreset } from "@/lib/server/login-motion";
+import auroraImage from "../../public/motion/aurora-identity.jpg";
+import orbitImage from "../../public/motion/orbit-trust.jpg";
 
 function AuroraScene() {
   return (
     <>
+      <img alt="" className="login-motion__image" src={auroraImage.src} />
       <div className="login-motion__grain" />
       <div className="login-motion__aurora-grid" />
       <div className="login-motion__aurora-beam login-motion__aurora-beam--one" />
       <div className="login-motion__aurora-beam login-motion__aurora-beam--two" />
       <div className="login-motion__aurora-beam login-motion__aurora-beam--three" />
       <div className="login-motion__aurora-horizon" />
+      <div className="login-motion__story login-motion__story--aurora">
+        <span className="login-motion__eyebrow">IDENTITY / 01</span>
+        <strong>
+          ENTER THE
+          <br />
+          SIGNAL.
+        </strong>
+        <p>A private access point shaped around your organization.</p>
+      </div>
       <div className="login-motion__caption login-motion__caption--aurora">
         <span>IDENTITY SIGNAL</span>
         <strong>ACQUIRED</strong>
@@ -20,6 +32,7 @@ function AuroraScene() {
 function OrbitScene() {
   return (
     <>
+      <img alt="" className="login-motion__image" src={orbitImage.src} />
       <div className="login-motion__grain" />
       <div className="login-motion__orbit-field" />
       <div className="login-motion__orbit-map">
@@ -40,6 +53,15 @@ function OrbitScene() {
       <div className="login-motion__orbit-lock">
         <span className="login-motion__orbit-lock-ring" />
         <span className="login-motion__orbit-lock-mark" />
+      </div>
+      <div className="login-motion__story login-motion__story--orbit">
+        <span className="login-motion__eyebrow">TRUST NETWORK / 02</span>
+        <strong>
+          EVERY HOP.
+          <br />
+          VERIFIED.
+        </strong>
+        <p>Identity moves only through routes your organization trusts.</p>
       </div>
       <div className="login-motion__caption login-motion__caption--orbit">
         <span>TRUST ROUTE</span>

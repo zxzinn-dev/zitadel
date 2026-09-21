@@ -30,9 +30,9 @@ export function BackgroundWrapper({
     : {};
 
   return (
-    <div className={className} style={backgroundStyle}>
+    <div className={`${className} login-shell login-shell--${motion}`} style={backgroundStyle}>
       <LoginMotion preset={motion} />
-      <div className="relative z-10">{children}</div>
+      <div className="login-shell__content relative z-10">{children}</div>
     </div>
   );
 }
