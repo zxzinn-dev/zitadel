@@ -3,7 +3,7 @@ name: Custom Login Image
 on:
   push:
     branches:
-      - "zxzinn/dev/**"
+      - "zxzinn-dev/dev/**"
     paths:
       - ".github/workflows/custom-login-image.yml"
       - "apps/login/**"
