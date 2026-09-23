@@ -48,6 +48,22 @@ jobs:
       - name: Verify Login app
         run: pnpm nx run-many --projects @zitadel/login --targets lint test-unit
 
+      - name: Verify artwork in standalone server
+        shell: bash
+        run: |
+          cd apps/login/.next/standalone
+          ZITADEL_API_URL=http://127.0.0.1:9 ZITADEL_SERVICE_USER_TOKEN=preview \
+            CSP_FETCH_ENABLED=false OTEL_SDK_DISABLED=true HOSTNAME=127.0.0.1 PORT=3101 \
+            node apps/login/server.js > /tmp/zitadel-login-smoke.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"; wait "$server_pid" || true' EXIT
+          for asset in prism-day.jpg glass-architecture.jpg; do
+            curl --fail --silent --show-error --retry 20 --retry-connrefused --retry-delay 1 \
+              "http://127.0.0.1:3101/ui/v2/login/login-art/$asset" \
+              --output "/tmp/$asset"
+            cmp "/tmp/$asset" "$GITHUB_WORKSPACE/apps/login/public/login-art/$asset"
+          done
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
