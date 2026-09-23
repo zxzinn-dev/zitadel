@@ -121,6 +121,15 @@ The scenes use licensed photographs with slow image and glass-lens motion. The m
 pointer input, and stays static when the browser requests reduced motion. Keep `default` set to `none` unless every
 organization has approved the artwork.
 
+### Curated public previews
+
+`/showcase/aurora` and `/showcase/orbit` display the same scene components with inert example form content. They do
+not start or submit an authentication flow. Only the explicit `PUBLIC_SHOWCASE_PRESETS` allowlist in
+`src/lib/showcase.ts` is published; an organization ID, runtime `LOGIN_MOTION_PROFILES` mapping, or future custom
+theme never creates a public preview automatically. Unknown paths return 404. The showcase pages opt out of search
+indexing and permit framing only from `https://wiki.zxzinn.dev` (plus local docs development). Normal authentication
+pages continue to deny framing.
+
 The Login app receives the organization context through the existing `organization` query parameter. Ensure the
 OIDC authorization request includes an organization scope or otherwise establishes organization context before the
 login route is rendered.

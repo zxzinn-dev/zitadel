@@ -4,6 +4,7 @@ import { applyCustomHeaders } from "./lib/custom-headers";
 import { createLogger } from "./lib/logger";
 import { getIframeOrigins } from "./lib/server/security-settings";
 import { getServiceConfig } from "./lib/service-url";
+import { isPublicShowcasePath } from "./lib/showcase";
 
 const logger = createLogger("middleware");
 
@@ -27,6 +28,22 @@ export async function proxy(request: NextRequest) {
   const skipPaths = ["/healthy", "/ready"];
   if (skipPaths.includes(request.nextUrl.pathname)) {
     return NextResponse.next({ request: { headers: requestHeaders } });
+  }
+
+  // A curated visual preview has no session or organization data. Only the
+  // internal documentation origin may frame it; auth routes keep their normal
+  // API-derived CSP and X-Frame-Options protection below.
+  if (isPublicShowcasePath(request.nextUrl.pathname)) {
+    requestHeaders.delete("x-zitadel-i18n-organization");
+    const iframeOrigins = ["https://wiki.zxzinn.dev"];
+    if (process.env.NODE_ENV === "development") {
+      iframeOrigins.push("http://localhost:5175");
+    }
+    const responseHeaders = new Headers({
+      "Content-Security-Policy": buildCSP({ iframeOrigins }),
+      "X-Robots-Tag": "noindex, nofollow",
+    });
+    return NextResponse.next({ request: { headers: requestHeaders }, headers: responseHeaders });
   }
 
   const { serviceConfig } = getServiceConfig(request.headers);

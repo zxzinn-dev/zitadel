@@ -19,7 +19,8 @@ const secureHeaders = [
     key: "X-XSS-Protection",
     value: "1; mode=block",
   },
-  { key: "X-Frame-Options", value: "deny" },
+  // The proxy denies framing for auth routes, while its curated showcase
+  // route allows only the internal documentation origin through CSP.
 ];
 
 /** @type {import('next').NextConfig} */
