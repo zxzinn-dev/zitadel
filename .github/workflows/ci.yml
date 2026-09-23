@@ -22,7 +22,7 @@ permissions:
 jobs:
   lint_test_build:
     uses: ./.github/workflows/lint_test_build.yml
-    if: ${{ github.ref != 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.repository == 'zitadel/zitadel' && (github.ref != 'refs/heads/main' || github.event_name == 'workflow_dispatch') }}
     permissions:
       contents: read
     with:
@@ -30,6 +30,26 @@ jobs:
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       NX_CLOUD_ACCESS_TOKEN_READONLY: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+
+  fork_login_checks:
+    name: Login lint, unit tests, and build
+    if: ${{ github.repository != 'zitadel/zitadel' && (github.event_name == 'pull_request' || github.ref == 'refs/heads/main') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm nx run-many --projects @zitadel/login --targets lint test-unit build
+        env:
+          NX_NO_CLOUD: "true"
 
   pack:
     uses: ./.github/workflows/pack.yml
