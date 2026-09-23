@@ -3,7 +3,6 @@
 import type { LoginMotionPreset } from "@/lib/server/login-motion";
 import { useThemeConfig } from "@/lib/theme-hooks";
 import { ReactNode } from "react";
-import { LoginMotion } from "./login-motion";
 
 /**
  * BackgroundWrapper component handles applying background images from theme configuration.
@@ -31,7 +30,6 @@ export function BackgroundWrapper({
 
   return (
     <div className={`${className} login-shell login-shell--${motion}`} style={backgroundStyle}>
-      <LoginMotion preset={motion} />
       <div className="login-shell__content relative z-10">{children}</div>
     </div>
   );

@@ -3,6 +3,7 @@ import "@/styles/globals.scss";
 import { BackgroundWrapper } from "@/components/background-wrapper";
 import { LanguageProvider } from "@/components/language-provider";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { LoginMotion } from "@/components/login-motion";
 import { Skeleton } from "@/components/skeleton";
 import { ThemeProvider } from "@/components/theme-provider";
 import ThemeSwitch from "@/components/theme-switch";
@@ -73,7 +74,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   motion={motion}
                 >
                   <div className={`login-stage login-stage--${motion} relative mx-auto w-full max-w-[1100px] py-8`}>
-                    <div>{children}</div>
+                    <LoginMotion preset={motion} />
+                    <div className="login-stage__form">{children}</div>
                     <div className="login-stage__controls mx-auto flex max-w-[440px] flex-row items-center justify-end space-x-4 px-4 py-4 md:max-w-full md:px-8">
                       <LanguageSwitcher languages={languages} />
                       <ThemeSwitch />

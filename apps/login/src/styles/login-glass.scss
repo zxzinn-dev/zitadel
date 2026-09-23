@@ -1,0 +1,421 @@
+/* Photographs: Artem (https://unsplash.com/photos/a18lCneoV4E) and David Clode
+   (https://unsplash.com/photos/l16rjVtp11g), used under the Unsplash License.
+   The form stays legible in a separate glass layer over the imagery. */
+.login-shell--aurora,
+.login-shell--orbit {
+  --glass-ink: #152b32;
+  --glass-accent: #135e68;
+  min-height: 100svh;
+  background:
+    radial-gradient(ellipse at 17% 12%, rgba(188, 223, 226, 0.8), transparent 43%),
+    radial-gradient(ellipse at 84% 88%, rgba(207, 194, 224, 0.75), transparent 43%), #dce5e7 !important;
+}
+
+.login-shell--orbit {
+  --glass-ink: #201d34;
+  --glass-accent: #59418c;
+  background:
+    radial-gradient(ellipse at 10% 5%, rgba(141, 129, 183, 0.45), transparent 43%),
+    radial-gradient(ellipse at 80% 90%, rgba(124, 161, 194, 0.36), transparent 42%), #d9d7e3 !important;
+}
+
+.login-shell--aurora .login-shell__content,
+.login-shell--orbit .login-shell__content {
+  display: flex;
+  min-height: 100svh;
+  align-items: center;
+  justify-content: center;
+  padding: 36px;
+}
+
+.login-stage--aurora,
+.login-stage--orbit {
+  position: relative;
+  width: min(1190px, 100%) !important;
+  max-width: 1190px !important;
+  min-height: 700px;
+  padding: 22px !important;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  border-radius: 34px;
+  background: linear-gradient(130deg, rgba(255, 255, 255, 0.61), rgba(255, 255, 255, 0.24));
+  box-shadow:
+    0 36px 90px rgba(29, 49, 63, 0.18),
+    inset 0 1px 0 #fff;
+  backdrop-filter: blur(32px) saturate(145%);
+  -webkit-backdrop-filter: blur(32px) saturate(145%);
+}
+
+.login-stage--aurora::before,
+.login-stage--orbit::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.56), transparent 30%);
+}
+
+.login-stage--aurora > .login-stage__form,
+.login-stage--orbit > .login-stage__form {
+  position: relative;
+  z-index: 3;
+  width: min(45%, 480px);
+  margin: 116px 0 0 25px;
+  transform: none;
+}
+
+.login-stage--aurora [data-login-card],
+.login-stage--orbit [data-login-card] {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.95) !important;
+  border-radius: 26px !important;
+  color: var(--glass-ink);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.91), rgba(255, 255, 255, 0.68)) !important;
+  box-shadow:
+    0 22px 56px rgba(36, 59, 71, 0.14),
+    inset 0 1px 0 #fff !important;
+  backdrop-filter: blur(30px) saturate(140%);
+  -webkit-backdrop-filter: blur(30px) saturate(140%);
+}
+
+.login-stage--aurora [data-login-card]::before,
+.login-stage--orbit [data-login-card]::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #fff, transparent);
+}
+
+.login-stage--aurora [data-login-card] h1,
+.login-stage--orbit [data-login-card] h1 {
+  color: var(--glass-ink);
+  font-size: 2.05rem;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+}
+
+.login-stage--aurora [data-login-card] .ztdl-p,
+.login-stage--orbit [data-login-card] .ztdl-p {
+  color: #657b83;
+  line-height: 1.55;
+}
+
+.login-stage--aurora [data-login-card] input,
+.login-stage--orbit [data-login-card] input {
+  min-height: 50px;
+  border: 1px solid rgba(40, 76, 84, 0.2) !important;
+  border-radius: 12px !important;
+  color: var(--glass-ink) !important;
+  background: rgba(244, 250, 250, 0.76) !important;
+  box-shadow: inset 0 2px 5px rgba(16, 43, 49, 0.03);
+}
+
+.login-stage--aurora [data-login-card] input:focus,
+.login-stage--orbit [data-login-card] input:focus {
+  border-color: var(--glass-accent) !important;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--glass-accent) 18%, transparent);
+}
+
+.login-stage--aurora [data-login-card] button,
+.login-stage--orbit [data-login-card] button {
+  border-radius: 12px !important;
+}
+
+.login-stage--aurora [data-login-card] button[data-testid="submit-button"]:not(:disabled),
+.login-stage--orbit [data-login-card] button[data-testid="submit-button"]:not(:disabled) {
+  border-color: transparent;
+  color: #fff;
+  background: var(--glass-accent);
+  box-shadow: 0 7px 18px color-mix(in srgb, var(--glass-accent) 22%, transparent);
+}
+
+.login-stage--aurora .login-stage__controls,
+.login-stage--orbit .login-stage__controls {
+  position: absolute;
+  z-index: 4;
+  bottom: 32px;
+  left: 57px;
+  width: 420px;
+  padding: 0 !important;
+  color: var(--glass-ink);
+}
+
+.login-motion.login-motion--aurora,
+.login-motion.login-motion--orbit {
+  position: absolute;
+  z-index: 1;
+  inset: 22px 22px 22px 49%;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: 24px;
+  background: #172025;
+  box-shadow: 0 20px 48px rgba(23, 35, 42, 0.16);
+}
+
+.liquid-scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 654px;
+  color: #fff;
+  isolation: isolate;
+}
+
+.liquid-scene__photo,
+.liquid-scene__shade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.liquid-scene__photo {
+  object-fit: cover;
+  object-position: center;
+}
+.login-motion--orbit .liquid-scene__photo {
+  object-position: 58% center;
+}
+.liquid-scene__shade {
+  background: linear-gradient(
+    180deg,
+    rgba(10, 15, 22, 0.66),
+    rgba(10, 15, 22, 0.3) 40%,
+    transparent 67%,
+    rgba(10, 15, 22, 0.17)
+  );
+}
+.login-motion--orbit .liquid-scene__shade {
+  background: linear-gradient(180deg, rgba(8, 6, 17, 0.62), rgba(8, 6, 17, 0.18) 55%, rgba(8, 6, 17, 0.34));
+}
+
+.liquid-scene__header,
+.liquid-scene__footer {
+  position: absolute;
+  z-index: 5;
+  right: 32px;
+  left: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font:
+    700 10px/1.2 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  letter-spacing: 0.16em;
+}
+
+.liquid-scene__header {
+  top: 30px;
+}
+.liquid-scene__brand span {
+  color: rgba(255, 255, 255, 0.55);
+}
+.liquid-scene__footer {
+  bottom: 28px;
+}
+.liquid-scene__footer-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.46);
+}
+.liquid-scene__status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.liquid-scene__status i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #d9fff7;
+  box-shadow: 0 0 12px rgba(209, 255, 248, 0.75);
+}
+
+.liquid-scene__intro {
+  position: absolute;
+  z-index: 4;
+  top: 17%;
+  left: 9%;
+  width: 82%;
+}
+.liquid-scene__eyebrow {
+  font:
+    700 10px/1.2 ui-monospace,
+    monospace;
+  letter-spacing: 0.19em;
+}
+.liquid-scene__intro strong {
+  display: block;
+  margin-top: 18px;
+  font-size: clamp(2.8rem, 4.3vw, 4.5rem);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.067em;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.25);
+}
+.liquid-scene__intro p {
+  max-width: 330px;
+  margin-top: 17px;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.liquid-scene__lens {
+  position: absolute;
+  z-index: 3;
+  right: 10%;
+  bottom: 18%;
+  display: grid;
+  width: 174px;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 48% 52% 58% 42% / 47% 45% 55% 53%;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.57), rgba(255, 255, 255, 0.08) 47%, rgba(255, 255, 255, 0.36));
+  box-shadow:
+    inset 14px 17px 26px rgba(255, 255, 255, 0.42),
+    inset -14px -16px 26px rgba(35, 56, 73, 0.13),
+    0 20px 40px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px) saturate(170%);
+  -webkit-backdrop-filter: blur(8px) saturate(170%);
+}
+.liquid-scene__lens-mark {
+  color: #fff;
+  font-size: 2.8rem;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+}
+
+.liquid-scene__note {
+  position: absolute;
+  z-index: 4;
+  bottom: 16%;
+  left: 8%;
+  display: flex;
+  max-width: 230px;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 14px;
+  color: #20343b;
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow:
+    0 14px 35px rgba(13, 30, 38, 0.15),
+    inset 0 1px 0 #fff;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.liquid-scene__note-icon {
+  color: var(--glass-accent);
+  font-size: 19px;
+}
+
+@media (max-width: 980px) {
+  .login-shell--aurora .login-shell__content,
+  .login-shell--orbit .login-shell__content {
+    padding: 18px;
+  }
+  .login-stage--aurora,
+  .login-stage--orbit {
+    width: 100% !important;
+    min-height: 0;
+    padding: 18px !important;
+  }
+  .login-stage--aurora > .login-stage__form,
+  .login-stage--orbit > .login-stage__form {
+    width: min(100%, 480px);
+    margin: 260px auto 0;
+  }
+  .login-motion.login-motion--aurora,
+  .login-motion.login-motion--orbit {
+    inset: 18px 18px auto;
+    height: 240px;
+  }
+  .liquid-scene {
+    min-height: 240px;
+  }
+  .liquid-scene__header {
+    top: 20px;
+  }
+  .liquid-scene__intro {
+    top: 28%;
+    left: 6%;
+    width: 55%;
+  }
+  .liquid-scene__intro strong {
+    margin-top: 7px;
+    font-size: clamp(1.55rem, 4.2vw, 2.4rem);
+  }
+  .liquid-scene__intro p,
+  .liquid-scene__eyebrow,
+  .liquid-scene__footer,
+  .liquid-scene__note {
+    display: none;
+  }
+  .liquid-scene__lens {
+    right: 10%;
+    bottom: 10%;
+    width: 125px;
+  }
+  .login-stage--aurora .login-stage__controls,
+  .login-stage--orbit .login-stage__controls {
+    position: static;
+    width: min(100%, 480px);
+    margin: 16px auto 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .login-shell--aurora .login-shell__content,
+  .login-shell--orbit .login-shell__content {
+    padding: 10px;
+  }
+  .login-stage--aurora,
+  .login-stage--orbit {
+    padding: 10px !important;
+    border-radius: 24px;
+  }
+  .login-stage--aurora > .login-stage__form,
+  .login-stage--orbit > .login-stage__form {
+    margin-top: 208px;
+  }
+  .login-motion.login-motion--aurora,
+  .login-motion.login-motion--orbit {
+    inset: 10px 10px auto;
+    height: 195px;
+    border-radius: 17px;
+  }
+  .liquid-scene__header {
+    right: 16px;
+    left: 16px;
+    font-size: 8px;
+  }
+  .liquid-scene__status {
+    font-size: 0;
+  }
+  .liquid-scene__intro {
+    top: 34%;
+    left: 7%;
+    width: 56%;
+  }
+  .liquid-scene__intro strong {
+    font-size: clamp(1.5rem, 7vw, 2rem);
+  }
+  .liquid-scene__lens {
+    right: 8%;
+    bottom: 8%;
+    width: 102px;
+  }
+  .login-stage--aurora [data-login-card],
+  .login-stage--orbit [data-login-card] {
+    border-radius: 19px !important;
+  }
+}
