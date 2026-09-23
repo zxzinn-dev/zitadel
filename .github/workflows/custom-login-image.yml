@@ -1,0 +1,78 @@
+name: Custom Login Image
+
+on:
+  push:
+    branches:
+      - "zxzinn-dev/dev/**"
+    paths:
+      - ".github/workflows/custom-login-image.yml"
+      - "apps/login/**"
+      - "packages/zitadel-client/**"
+      - "packages/zitadel-proto/**"
+      - "proto/**"
+      - "nx.json"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: custom-login-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify Login app
+        run: pnpm nx run-many --projects @zitadel/login --targets lint test-unit
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Sign in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve image metadata
+        id: image
+        shell: bash
+        run: echo "tag=sha-${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish multi-architecture Login image
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/login
+          file: apps/login/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          provenance: mode=max
+          sbom: true
+          tags: ghcr.io/zxzinn-dev/zitadel-login:${{ steps.image.outputs.tag }}
