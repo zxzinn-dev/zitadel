@@ -19,6 +19,8 @@ concurrency:
 
 jobs:
   CodeQL-Build:
+    # The fork uses GitHub's default CodeQL setup; advanced uploads conflict with it.
+    if: github.repository == 'zitadel/zitadel'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
