@@ -2,16 +2,15 @@
 
 import { timestampDate, timestampFromMs } from "@zitadel/client";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 import { LANGUAGE_COOKIE_NAME } from "./i18n";
 import { createLogger } from "./logger";
 import { parseAndVerifySessions, signSession } from "./session-cookie-signature";
 
 const logger = createLogger("cookies");
 
-// TODO: improve this to handle overflow
-// Browsers cap a single cookie at ~4096 bytes (name, value and attributes). Keep a margin for
-// the attributes and for the signature that is added to every entry when the cookie is written.
-const MAX_COOKIE_SIZE = 3500;
+// Bound the actual encoded Set-Cookie header, including its name and attributes.
+const MAX_COOKIE_SIZE = 4096;
 
 export type Cookie = {
   id: string;
@@ -40,15 +39,30 @@ async function setSessionHttpOnlyCookie<T>(sessions: SessionCookie<T>[], iFrameE
     resolvedSameSite = "lax";
   }
 
-  return cookiesList.set({
+  const signedSessions = sessions.map((session) => signSession(session));
+  const options = {
     name: "sessions",
-    value: JSON.stringify(sessions.map((session) => signSession(session))),
+    value: JSON.stringify(signedSessions),
     httpOnly: true,
     path: "/",
     sameSite: resolvedSameSite,
     // "none" is only accepted by browsers together with "secure", otherwise the cookie is silently dropped
     secure: process.env.NODE_ENV === "production" || resolvedSameSite === "none",
-  });
+  };
+  while (true) {
+    const response = new NextResponse();
+    response.cookies.set(options);
+    if (Buffer.byteLength(response.headers.get("set-cookie") ?? "", "utf8") <= MAX_COOKIE_SIZE) {
+      return cookiesList.set(options);
+    }
+    if (signedSessions.length <= 1) {
+      throw new Error("Session cookie exceeds browser storage limit");
+    }
+    logger.warn("WARNING COOKIE OVERFLOW");
+    // Callers put the current session first; discard least-recent remembered accounts.
+    signedSessions.pop();
+    options.value = JSON.stringify(signedSessions);
+  }
 }
 
 function readSessionCookies<T>(value: string | undefined): SessionCookie<T>[] {
@@ -103,23 +117,7 @@ export async function addSessionToCookie<T>({
 
   let currentSessions: SessionCookie<T>[] = readSessionCookies<T>(stringifiedCookie?.value);
 
-  const index = currentSessions.findIndex((s) => s.loginName === session.loginName);
-
-  if (index > -1) {
-    currentSessions[index] = session;
-  } else {
-    const temp = [...currentSessions, session];
-
-    // measure the value as it will be written (including signatures)
-    if (JSON.stringify(temp.map((s) => signSession(s))).length >= MAX_COOKIE_SIZE) {
-      logger.warn("WARNING COOKIE OVERFLOW");
-      // TODO: improve cookie handling
-      // this replaces the first session (oldest) with the new one
-      currentSessions = [session].concat(currentSessions.slice(1));
-    } else {
-      currentSessions = [session].concat(currentSessions);
-    }
-  }
+  currentSessions = [session, ...currentSessions.filter((s) => s.loginName !== session.loginName)];
 
   if (cleanup) {
     const now = new Date();
@@ -151,7 +149,8 @@ export async function updateSessionCookie<T>({
   const foundIndex = sessions.findIndex((session) => session.id === id);
 
   if (foundIndex > -1) {
-    sessions[foundIndex] = session;
+    sessions.splice(foundIndex, 1);
+    sessions.unshift(session);
     if (cleanup) {
       const now = new Date();
       const filteredSessions = sessions.filter((session) =>

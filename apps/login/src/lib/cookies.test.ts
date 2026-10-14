@@ -16,6 +16,7 @@ import {
 
 import { timestampDate, timestampFromMs } from "@zitadel/client";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 import { signSession, verifySession } from "./session-cookie-signature";
 
 // Mock logger - use vi.hoisted to ensure it's defined before vi.mock runs
@@ -177,7 +178,7 @@ describe("cookies", () => {
     });
 
     it("should handle cookie overflow by replacing oldest session", async () => {
-      // Create many sessions to exceed MAX_COOKIE_SIZE (3500)
+      // Create many remembered accounts to exceed the browser's encoded cookie limit.
       const manySessions: Cookie[] = Array.from({ length: 16 }, (_, i) => ({
         id: `session-${i}`,
         token: `token-${i}-very-long-token-to-increase-size-padding-padding-padding`,
@@ -195,9 +196,48 @@ describe("cookies", () => {
 
       const sessions = writtenSessions();
 
-      // Should have new session and all but the first old session
+      // Retain the new session and the most recently remembered existing accounts.
       expect(sessions[0]).toMatchObject(mockSession);
-      expect(sessions.some((s) => s.id === manySessions[0].id)).toBe(false);
+      expect(sessions.some((s) => s.id === manySessions[0].id)).toBe(true);
+      expect(sessions.some((s) => s.id === manySessions.at(-1)?.id)).toBe(false);
+      const response = new NextResponse();
+      response.cookies.set(mockCookies.set.mock.calls[0][0]);
+      expect(Buffer.byteLength(response.headers.get("set-cookie") ?? "")).toBeLessThanOrEqual(4096);
+    });
+
+    it("rejects a single oversized active session instead of writing an unusable cookie", async () => {
+      await expect(addSessionToCookie({ session: { ...mockSession, token: "x".repeat(5000) } })).rejects.toThrow(
+        "Session cookie exceeds browser storage limit",
+      );
+      expect(mockCookies.set).not.toHaveBeenCalled();
+    });
+
+    it.each([false, true])("bounds encoded Unicode cookies with iframe=%s", async (iFrameEnabled) => {
+      const existing = Array.from({ length: 3 }, (_, i) => ({
+        ...mockSession,
+        id: `remembered-${i}`,
+        loginName: `member-${i}-${"界".repeat(90)}`,
+      }));
+      const session = { ...mockSession, id: "active", loginName: `active-${"界".repeat(90)}` };
+      const initial = new NextResponse();
+      initial.cookies.set({
+        name: "sessions",
+        value: stored(...existing).value,
+        httpOnly: true,
+        path: "/",
+        sameSite: "lax",
+      });
+      expect(Buffer.byteLength(initial.headers.get("set-cookie") ?? "")).toBeLessThanOrEqual(4096);
+      expect(stored(session, ...existing).value.length).toBeLessThan(3500);
+      mockCookies.get.mockReturnValue(stored(...existing));
+
+      await addSessionToCookie({ session, iFrameEnabled });
+
+      const response = new NextResponse();
+      response.cookies.set(mockCookies.set.mock.calls[0][0]);
+      expect(Buffer.byteLength(response.headers.get("set-cookie") ?? "")).toBeLessThanOrEqual(4096);
+      expect(writtenSessions()[0]).toMatchObject(session);
+      expect(writtenSessions().length).toBeLessThan(4);
     });
 
     it("should cleanup expired sessions when cleanup is true", async () => {

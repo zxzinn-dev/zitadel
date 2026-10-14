@@ -200,6 +200,41 @@ describe("session-cookie-signature", () => {
     // both credentials configured during the migration
     vi.stubEnv("SYSTEM_USER_PRIVATE_KEY", "system-user-private-key");
     expect(verifySession(signedWithPat)).toBe(true);
+    const signedDuringOverlap = signSession(session);
+    vi.stubEnv("ZITADEL_SERVICE_USER_TOKEN", undefined);
+    expect(verifySession(signedDuringOverlap)).toBe(true);
+  });
+
+  test("new login-client cookies survive retiring the overlapping PAT", () => {
+    const dir = mkdtempSync(join(tmpdir(), "session-cookie-priority-"));
+    const keyFile = join(dir, "login-client.key");
+    writeFileSync(keyFile, "synthetic-login-client-key");
+    unsetAllSecrets();
+    vi.stubEnv("ZITADEL_SERVICE_USER_TOKEN", "synthetic-pat");
+    const previous = signSession(session);
+    vi.stubEnv("ZITADEL_LOGINCLIENT_KEYFILE", keyFile);
+    expect(verifySession(previous)).toBe(true);
+    const current = signSession(session);
+    vi.stubEnv("ZITADEL_SERVICE_USER_TOKEN", undefined);
+    expect(verifySession(current)).toBe(true);
+  });
+
+  test("system key-file signing wins over inline key, login key, and PAT", () => {
+    const dir = mkdtempSync(join(tmpdir(), "session-cookie-system-priority-"));
+    const keyFile = join(dir, "system.key");
+    const loginFile = join(dir, "login.key");
+    writeFileSync(keyFile, "synthetic-system-key");
+    writeFileSync(loginFile, "synthetic-login-key");
+    unsetAllSecrets();
+    vi.stubEnv("SYSTEM_USER_PRIVATE_KEY_FILE", keyFile);
+    vi.stubEnv("SYSTEM_USER_PRIVATE_KEY", "synthetic-inline-key");
+    vi.stubEnv("ZITADEL_LOGINCLIENT_KEYFILE", loginFile);
+    vi.stubEnv("ZITADEL_SERVICE_USER_TOKEN", "synthetic-pat");
+    const current = signSession(session);
+    vi.stubEnv("SYSTEM_USER_PRIVATE_KEY", undefined);
+    vi.stubEnv("ZITADEL_LOGINCLIENT_KEYFILE", undefined);
+    vi.stubEnv("ZITADEL_SERVICE_USER_TOKEN", undefined);
+    expect(verifySession(current)).toBe(true);
   });
 
   test("a dedicated secret takes precedence over API credentials", () => {

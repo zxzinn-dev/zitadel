@@ -52,10 +52,11 @@ function getDedicatedSecrets(): string[] {
 
 function getCredentialSecrets(): string[] {
   return [
-    process.env.ZITADEL_SERVICE_USER_TOKEN,
-    process.env.SYSTEM_USER_PRIVATE_KEY,
+    // Match service.ts and api.ts: system key file > inline system key > login key > PAT.
     process.env.SYSTEM_USER_PRIVATE_KEY_FILE ? readSecretFile(process.env.SYSTEM_USER_PRIVATE_KEY_FILE) : undefined,
+    process.env.SYSTEM_USER_PRIVATE_KEY,
     process.env.ZITADEL_LOGINCLIENT_KEYFILE ? readSecretFile(process.env.ZITADEL_LOGINCLIENT_KEYFILE) : undefined,
+    process.env.ZITADEL_SERVICE_USER_TOKEN,
   ].filter((s): s is string => !!s);
 }
 
