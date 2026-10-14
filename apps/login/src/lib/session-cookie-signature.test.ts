@@ -29,6 +29,8 @@ const OLD_SECRET = "old-secret-".padEnd(MIN_SESSION_COOKIE_SECRET_LENGTH, "o");
 const NEW_SECRET = "new-secret-".padEnd(MIN_SESSION_COOKIE_SECRET_LENGTH, "n");
 
 const SECRET_ENV_VARS = [
+  "AUDIENCE",
+  "SYSTEM_USER_ID",
   "ZITADEL_SESSION_COOKIE_SECRET",
   "ZITADEL_SERVICE_USER_TOKEN",
   "SYSTEM_USER_PRIVATE_KEY",
@@ -161,6 +163,8 @@ describe("session-cookie-signature", () => {
 
   test("falls back to SYSTEM_USER_PRIVATE_KEY when no other secret is set", () => {
     unsetAllSecrets();
+    vi.stubEnv("AUDIENCE", "https://issuer.example.test");
+    vi.stubEnv("SYSTEM_USER_ID", "system-user");
     vi.stubEnv("SYSTEM_USER_PRIVATE_KEY", "system-user-private-key");
 
     expect(verifySession(signSession(session))).toBe(true);
@@ -174,6 +178,8 @@ describe("session-cookie-signature", () => {
     writeFileSync(loginClientKeyFile, "login-client-key-from-file\n");
 
     unsetAllSecrets();
+    vi.stubEnv("AUDIENCE", "https://issuer.example.test");
+    vi.stubEnv("SYSTEM_USER_ID", "system-user");
     vi.stubEnv("SYSTEM_USER_PRIVATE_KEY_FILE", systemKeyFile);
     expect(getSessionCookieSecrets()).toEqual(["system-user-private-key-from-file"]);
     expect(verifySession(signSession(session))).toBe(true);
@@ -198,6 +204,8 @@ describe("session-cookie-signature", () => {
     const signedWithPat = signSession(session);
 
     // both credentials configured during the migration
+    vi.stubEnv("AUDIENCE", "https://issuer.example.test");
+    vi.stubEnv("SYSTEM_USER_ID", "system-user");
     vi.stubEnv("SYSTEM_USER_PRIVATE_KEY", "system-user-private-key");
     expect(verifySession(signedWithPat)).toBe(true);
     const signedDuringOverlap = signSession(session);
@@ -226,6 +234,8 @@ describe("session-cookie-signature", () => {
     writeFileSync(keyFile, "synthetic-system-key");
     writeFileSync(loginFile, "synthetic-login-key");
     unsetAllSecrets();
+    vi.stubEnv("AUDIENCE", "https://issuer.example.test");
+    vi.stubEnv("SYSTEM_USER_ID", "system-user");
     vi.stubEnv("SYSTEM_USER_PRIVATE_KEY_FILE", keyFile);
     vi.stubEnv("SYSTEM_USER_PRIVATE_KEY", "synthetic-inline-key");
     vi.stubEnv("ZITADEL_LOGINCLIENT_KEYFILE", loginFile);
@@ -235,6 +245,42 @@ describe("session-cookie-signature", () => {
     vi.stubEnv("ZITADEL_LOGINCLIENT_KEYFILE", undefined);
     vi.stubEnv("ZITADEL_SERVICE_USER_TOKEN", undefined);
     expect(verifySession(current)).toBe(true);
+  });
+
+  test.each(["AUDIENCE", "SYSTEM_USER_ID"])("ignores a system key when %s is missing", (missing) => {
+    unsetAllSecrets();
+    vi.stubEnv("AUDIENCE", "https://issuer.example.test");
+    vi.stubEnv("SYSTEM_USER_ID", "system-user");
+    vi.stubEnv(missing, undefined);
+    vi.stubEnv("SYSTEM_USER_PRIVATE_KEY", "unused-system-key");
+    vi.stubEnv("ZITADEL_SERVICE_USER_TOKEN", "active-pat");
+    const current = signSession(session);
+    expect(getSessionCookieSecrets()).toEqual(["active-pat"]);
+    vi.stubEnv("SYSTEM_USER_PRIVATE_KEY", undefined);
+    expect(verifySession(current)).toBe(true);
+  });
+
+  test("an incomplete system credential alone cannot make signing ready", () => {
+    unsetAllSecrets();
+    vi.stubEnv("SYSTEM_USER_PRIVATE_KEY", "unused-system-key");
+    expect(hasSessionCookieSecret()).toBe(false);
+  });
+
+  test("an unreadable selected system key does not fall through to inline key or PAT", () => {
+    unsetAllSecrets();
+    vi.stubEnv("AUDIENCE", "https://issuer.example.test");
+    vi.stubEnv("SYSTEM_USER_ID", "system-user");
+    vi.stubEnv("SYSTEM_USER_PRIVATE_KEY_FILE", "/does/not/exist-system.key");
+    vi.stubEnv("SYSTEM_USER_PRIVATE_KEY", "unused-inline-key");
+    vi.stubEnv("ZITADEL_SERVICE_USER_TOKEN", "unused-pat");
+    expect(hasSessionCookieSecret()).toBe(false);
+  });
+
+  test("an unreadable selected login-client key does not fall through to PAT", () => {
+    unsetAllSecrets();
+    vi.stubEnv("ZITADEL_LOGINCLIENT_KEYFILE", "/does/not/exist-login.key");
+    vi.stubEnv("ZITADEL_SERVICE_USER_TOKEN", "unused-pat");
+    expect(hasSessionCookieSecret()).toBe(false);
   });
 
   test("a dedicated secret takes precedence over API credentials", () => {

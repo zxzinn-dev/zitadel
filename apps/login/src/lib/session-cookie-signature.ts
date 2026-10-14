@@ -1,5 +1,6 @@
 import { createHmac, hkdfSync, timingSafeEqual } from "crypto";
 import { readFileSync } from "fs";
+import { hasLoginClientKey, hasSystemUserCredentials } from "./deployment";
 
 const SIGNATURE_VERSION = "v1";
 // Domain separation: the derived key is only ever used for session cookie signatures,
@@ -51,13 +52,27 @@ function getDedicatedSecrets(): string[] {
 }
 
 function getCredentialSecrets(): string[] {
-  return [
-    // Match service.ts and api.ts: system key file > inline system key > login key > PAT.
-    process.env.SYSTEM_USER_PRIVATE_KEY_FILE ? readSecretFile(process.env.SYSTEM_USER_PRIVATE_KEY_FILE) : undefined,
-    process.env.SYSTEM_USER_PRIVATE_KEY,
-    process.env.ZITADEL_LOGINCLIENT_KEYFILE ? readSecretFile(process.env.ZITADEL_LOGINCLIENT_KEYFILE) : undefined,
-    process.env.ZITADEL_SERVICE_USER_TOKEN,
-  ].filter((s): s is string => !!s);
+  const systemKeys = hasSystemUserCredentials()
+    ? [
+        process.env.SYSTEM_USER_PRIVATE_KEY_FILE ? readSecretFile(process.env.SYSTEM_USER_PRIVATE_KEY_FILE) : undefined,
+        process.env.SYSTEM_USER_PRIVATE_KEY,
+      ]
+    : [];
+  const loginKey = hasLoginClientKey() ? readSecretFile(process.env.ZITADEL_LOGINCLIENT_KEYFILE!) : undefined;
+  const pat = process.env.ZITADEL_SERVICE_USER_TOKEN;
+  // Select exactly the credential source used by service.ts and api.ts. An unreadable
+  // primary key must not silently fall through to a credential the API would not use.
+  const primary = hasSystemUserCredentials()
+    ? process.env.SYSTEM_USER_PRIVATE_KEY_FILE
+      ? systemKeys[0]
+      : process.env.SYSTEM_USER_PRIVATE_KEY
+    : hasLoginClientKey()
+      ? loginKey
+      : pat;
+  if (!primary) {
+    return [];
+  }
+  return [primary, ...systemKeys, loginKey, pat].filter((s): s is string => !!s);
 }
 
 /**
@@ -83,7 +98,7 @@ export function getSessionCookieSecretConfigError(): string | undefined {
  *   MIN_SESSION_COOKIE_SECRET_LENGTH characters long; if any is shorter, no secret is returned at all
  *   (signing fails and /ready reports not ready) instead of silently falling back to the credential.
  * - Otherwise (deprecated fallback) the API credential of the login is used, so applying the security
- *   patch does not require new configuration. All configured credentials are accepted for verification,
+ *   patch does not require new configuration. Eligible API credentials are accepted for verification,
  *   which keeps cookies valid while a deployment migrates from one credential type to another
  *   (e.g. PAT -> login client key). This fallback will be removed in a future major release.
  */
