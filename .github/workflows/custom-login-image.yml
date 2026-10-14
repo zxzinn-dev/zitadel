@@ -3,6 +3,8 @@ name: Custom Login Image
 on:
   push:
     branches:
+      - "main"
+      - "zxzinn/dev/**"
       - "zxzinn-dev/dev/**"
     paths:
       - ".github/workflows/custom-login-image.yml"
@@ -47,6 +49,9 @@ jobs:
 
       - name: Verify Login app
         run: pnpm nx run-many --projects @zitadel/login --targets lint test-unit
+        env:
+          NX_NO_CLOUD: "true"
+          NX_DAEMON: "false"
 
       - name: Verify artwork in standalone server
         shell: bash
@@ -92,3 +97,7 @@ jobs:
           provenance: mode=max
           sbom: true
           tags: ghcr.io/zxzinn-dev/zitadel-login:${{ steps.image.outputs.tag }}
+          labels: |
+            org.opencontainers.image.version=4.19.4
+            org.opencontainers.image.source=https://github.com/zxzinn-dev/zitadel
+            org.opencontainers.image.revision=${{ github.sha }}

@@ -42,7 +42,7 @@ export default async function Page(props: { searchParams: Promise<Record<string 
     const userId = session?.factors?.user?.id;
 
     if (!userId) {
-      throw Error("Could not get user id from session");
+      return undefined;
     }
 
     return listAuthenticationMethodTypes({ serviceConfig, userId }).then((methods) => {

@@ -2,13 +2,15 @@
 
 import { timestampDate, timestampFromMs } from "@zitadel/client";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 import { LANGUAGE_COOKIE_NAME } from "./i18n";
 import { createLogger } from "./logger";
+import { parseAndVerifySessions, signSession } from "./session-cookie-signature";
 
 const logger = createLogger("cookies");
 
-// TODO: improve this to handle overflow
-const MAX_COOKIE_SIZE = 2048;
+// Bound the actual encoded Set-Cookie header, including its name and attributes.
+const MAX_COOKIE_SIZE = 4096;
 
 export type Cookie = {
   id: string;
@@ -37,14 +39,51 @@ async function setSessionHttpOnlyCookie<T>(sessions: SessionCookie<T>[], iFrameE
     resolvedSameSite = "lax";
   }
 
-  return cookiesList.set({
+  const signedSessions = sessions.map((session) => signSession(session));
+  const options = {
     name: "sessions",
-    value: JSON.stringify(sessions),
+    value: JSON.stringify(signedSessions),
     httpOnly: true,
     path: "/",
     sameSite: resolvedSameSite,
-    secure: process.env.NODE_ENV === "production",
-  });
+    // "none" is only accepted by browsers together with "secure", otherwise the cookie is silently dropped
+    secure: process.env.NODE_ENV === "production" || resolvedSameSite === "none",
+  };
+  while (true) {
+    const response = new NextResponse();
+    response.cookies.set(options);
+    if (Buffer.byteLength(response.headers.get("set-cookie") ?? "", "utf8") <= MAX_COOKIE_SIZE) {
+      return cookiesList.set(options);
+    }
+    if (signedSessions.length <= 1) {
+      throw new Error("Session cookie exceeds browser storage limit");
+    }
+    logger.warn("WARNING COOKIE OVERFLOW");
+    // Callers put the current session first; discard least-recent remembered accounts.
+    signedSessions.pop();
+    options.value = JSON.stringify(signedSessions);
+  }
+}
+
+function readSessionCookies<T>(value: string | undefined): SessionCookie<T>[] {
+  const sessions = parseAndVerifySessions<SessionCookie<T>>(value);
+
+  if (value && sessions.length < countCookieEntries(value)) {
+    logger.warn(
+      `readSessionCookies: ignoring ${countCookieEntries(value) - sessions.length} session cookie entries with a missing or invalid signature (unsigned legacy cookie or signing secret changed)`,
+    );
+  }
+
+  return sessions;
+}
+
+function countCookieEntries(value: string): number {
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.length : 0;
+  } catch {
+    return 0;
+  }
 }
 
 export async function setLanguageCookie(language: string) {
@@ -76,24 +115,9 @@ export async function addSessionToCookie<T>({
   const cookiesList = await cookies();
   const stringifiedCookie = cookiesList.get("sessions");
 
-  let currentSessions: SessionCookie<T>[] = stringifiedCookie?.value ? JSON.parse(stringifiedCookie?.value) : [];
+  let currentSessions: SessionCookie<T>[] = readSessionCookies<T>(stringifiedCookie?.value);
 
-  const index = currentSessions.findIndex((s) => s.loginName === session.loginName);
-
-  if (index > -1) {
-    currentSessions[index] = session;
-  } else {
-    const temp = [...currentSessions, session];
-
-    if (JSON.stringify(temp).length >= MAX_COOKIE_SIZE) {
-      logger.warn("WARNING COOKIE OVERFLOW");
-      // TODO: improve cookie handling
-      // this replaces the first session (oldest) with the new one
-      currentSessions = [session].concat(currentSessions.slice(1));
-    } else {
-      currentSessions = [session].concat(currentSessions);
-    }
-  }
+  currentSessions = [session, ...currentSessions.filter((s) => s.loginName !== session.loginName)];
 
   if (cleanup) {
     const now = new Date();
@@ -120,12 +144,13 @@ export async function updateSessionCookie<T>({
   const cookiesList = await cookies();
   const stringifiedCookie = cookiesList.get("sessions");
 
-  const sessions: SessionCookie<T>[] = stringifiedCookie?.value ? JSON.parse(stringifiedCookie?.value) : [session];
+  const sessions: SessionCookie<T>[] = stringifiedCookie?.value ? readSessionCookies<T>(stringifiedCookie.value) : [session];
 
   const foundIndex = sessions.findIndex((session) => session.id === id);
 
   if (foundIndex > -1) {
-    sessions[foundIndex] = session;
+    sessions.splice(foundIndex, 1);
+    sessions.unshift(session);
     if (cleanup) {
       const now = new Date();
       const filteredSessions = sessions.filter((session) =>
@@ -152,7 +177,7 @@ export async function removeSessionFromCookie<T>({
   const cookiesList = await cookies();
   const stringifiedCookie = cookiesList.get("sessions");
 
-  const sessions: SessionCookie<T>[] = stringifiedCookie?.value ? JSON.parse(stringifiedCookie?.value) : [session];
+  const sessions: SessionCookie<T>[] = stringifiedCookie?.value ? readSessionCookies<T>(stringifiedCookie.value) : [session];
 
   const reducedSessions = sessions.filter((s) => s.id !== session.id);
   if (cleanup) {
@@ -170,17 +195,14 @@ export async function getMostRecentSessionCookie<T>(): Promise<Cookie | undefine
   const cookiesList = await cookies();
   const stringifiedCookie = cookiesList.get("sessions");
 
-  if (stringifiedCookie?.value) {
-    const sessions: SessionCookie<T>[] = JSON.parse(stringifiedCookie?.value);
-
-    const latest = sessions.reduce((prev, current) => {
-      return prev.changeTs > current.changeTs ? prev : current;
-    });
-
-    return latest;
-  } else {
+  const sessions = readSessionCookies<T>(stringifiedCookie?.value);
+  if (!sessions.length) {
     return undefined;
   }
+
+  return sessions.reduce((prev, current) => {
+    return prev.changeTs > current.changeTs ? prev : current;
+  });
 }
 
 export async function getSessionCookieById<T>({
@@ -193,20 +215,8 @@ export async function getSessionCookieById<T>({
   const cookiesList = await cookies();
   const stringifiedCookie = cookiesList.get("sessions");
 
-  if (stringifiedCookie?.value) {
-    const sessions: SessionCookie<T>[] = JSON.parse(stringifiedCookie?.value);
-
-    const found = sessions.find((s) =>
-      organization ? s.organization === organization && s.id === sessionId : s.id === sessionId,
-    );
-    if (found) {
-      return found;
-    } else {
-      return undefined;
-    }
-  } else {
-    return undefined;
-  }
+  const sessions = readSessionCookies<T>(stringifiedCookie?.value);
+  return sessions.find((s) => (organization ? s.organization === organization && s.id === sessionId : s.id === sessionId));
 }
 
 export async function getSessionCookieByLoginName<T>({
@@ -219,11 +229,7 @@ export async function getSessionCookieByLoginName<T>({
   const cookiesList = await cookies();
   const stringifiedCookie = cookiesList.get("sessions");
 
-  if (!stringifiedCookie?.value) {
-    return undefined;
-  }
-
-  const sessions: SessionCookie<T>[] = JSON.parse(stringifiedCookie.value);
+  const sessions = readSessionCookies<T>(stringifiedCookie?.value);
   return sessions.find((s) =>
     organization ? s.organization === organization && s.loginName === loginName : s.loginName === loginName,
   );
@@ -248,12 +254,12 @@ export async function getAllSessions<T>(cleanup: boolean = false): Promise<Sessi
   const cookiesList = await cookies();
   const stringifiedCookie = cookiesList.get("sessions");
 
-  if (!stringifiedCookie?.value) {
+  const sessions = readSessionCookies<T>(stringifiedCookie?.value);
+
+  if (!sessions.length) {
     logger.info("getAllSessions: No session cookie found, returning empty array");
     return [];
   }
-
-  const sessions: SessionCookie<T>[] = JSON.parse(stringifiedCookie.value);
 
   if (cleanup) {
     const now = new Date();
@@ -281,11 +287,11 @@ export async function getMostRecentCookieWithLoginname<T>({
   const cookiesList = await cookies();
   const stringifiedCookie = cookiesList.get("sessions");
 
-  if (!stringifiedCookie?.value) {
+  const sessions = readSessionCookies<T>(stringifiedCookie?.value);
+
+  if (!sessions.length) {
     return undefined;
   }
-
-  const sessions: SessionCookie<T>[] = JSON.parse(stringifiedCookie.value);
 
   let filtered = sessions;
 

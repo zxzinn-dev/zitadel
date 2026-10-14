@@ -38,6 +38,14 @@ export default async function Page(props: {
     },
   });
 
+  if (!session?.factors?.user?.id) {
+    return (
+      <Alert>
+        <Translated i18nKey={loginName || sessionId ? "sessionExpired" : "unknownContext"} namespace="error" />
+      </Alert>
+    );
+  }
+
   let totpResponse: RegisterTOTPResponse | undefined, error: Error | undefined;
   if (session && session.factors?.user?.id) {
     // Enrollment must be authorized: a bare identify-only session must not be able to
@@ -72,8 +80,6 @@ export default async function Page(props: {
     } else {
       throw new Error("Invalid method");
     }
-  } else {
-    throw new Error("No session found");
   }
 
   const paramsToContinue = new URLSearchParams({});
@@ -130,14 +136,6 @@ export default async function Page(props: {
                 ? "Code via SMS was successfully added."
                 : ""}
           </p>
-        )}
-
-        {!session && (
-          <div className="py-4">
-            <Alert>
-              <Translated i18nKey="unknownContext" namespace="error" />
-            </Alert>
-          </div>
         )}
 
         {error && (
