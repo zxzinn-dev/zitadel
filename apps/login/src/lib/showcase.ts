@@ -26,7 +26,7 @@ export function getShowcaseFrameOrigins(value: string | undefined, development =
       return [];
     }
   }
-  return [...new Set(origins)];
+  return Array.from(new Set(origins));
 }
 
 export function isPublicShowcasePreset(value: string): value is PublicShowcasePreset {
