@@ -21,6 +21,14 @@ Upgrade API and Login together and verify native login, MFA, OIDC callbacks,
 logout, and both curated showcase routes before accepting the rollout.
 
 Run `NX_NO_CLOUD=true pnpm nx run-many --projects @zitadel/login --targets lint test-unit build`.
+
+Set the runtime `SHOWCASE_FRAME_ORIGINS` variable to a comma-separated list of
+exact HTTPS documentation origins, for example `https://docs.northbrio.ai`.
+Missing or invalid configuration denies framing; no deployment hostname is
+implicit. Paths, credentials, wildcards and CSP expressions are rejected.
+HTTP loopback origins are allowed only in development and must also be listed
+explicitly. This setting applies only to the curated Aurora and Orbit showcase
+routes; authentication routes retain their API-derived framing policy.
 The unit suite exercises missing and forged signatures, session-id/token
 tampering, invalid signing secrets, and key rotation. The custom-image workflow
 also executes the standalone server and compares both artwork responses with

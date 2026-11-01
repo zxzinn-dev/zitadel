@@ -4,7 +4,7 @@ import { applyCustomHeaders } from "./lib/custom-headers";
 import { createLogger } from "./lib/logger";
 import { getIframeOrigins } from "./lib/server/security-settings";
 import { getServiceConfig } from "./lib/service-url";
-import { isPublicShowcasePath } from "./lib/showcase";
+import { getShowcaseFrameOrigins, isPublicShowcasePath } from "./lib/showcase";
 
 const logger = createLogger("middleware");
 
@@ -35,10 +35,10 @@ export async function proxy(request: NextRequest) {
   // API-derived CSP and X-Frame-Options protection below.
   if (isPublicShowcasePath(request.nextUrl.pathname)) {
     requestHeaders.delete("x-zitadel-i18n-organization");
-    const iframeOrigins = ["https://wiki.zxzinn.dev"];
-    if (process.env.NODE_ENV === "development") {
-      iframeOrigins.push("http://localhost:5175");
-    }
+    const iframeOrigins = getShowcaseFrameOrigins(
+      process.env.SHOWCASE_FRAME_ORIGINS,
+      process.env.NODE_ENV === "development",
+    );
     const responseHeaders = new Headers({
       "Content-Security-Policy": buildCSP({ iframeOrigins }),
       "X-Robots-Tag": "noindex, nofollow",

@@ -18,6 +18,12 @@ session 與已發出的 token 不受影響。API 與 Login 應一起升級，並
 登入、MFA、OIDC callback、登出與兩個公開 showcase 路徑，再接受部署結果。
 
 執行 `NX_NO_CLOUD=true pnpm nx run-many --projects @zitadel/login --targets lint test-unit build`。
+
+執行時將 `SHOWCASE_FRAME_ORIGINS` 設為以逗號分隔的精確 HTTPS 文件站來源，
+例如 `https://docs.northbrio.ai`。未設定或設定不合法時拒絕嵌入，不隱含任何
+部署網域；路徑、帳密、萬用字元及 CSP 表達式都會被拒絕。HTTP loopback
+來源僅限開發模式，而且仍須明確列出。此設定僅適用於受限的 Aurora 與 Orbit
+展示路由；一般驗證路由仍使用 API 提供的嵌入政策。
 單元測試涵蓋缺少或偽造簽章、session ID 與 token 竄改、不合法簽章金鑰及
 金鑰輪替。自訂映像 workflow 也會執行 standalone server，比對兩張圖片的
 HTTP 回應與封裝的原始資產，接著發布以 digest 識別的 amd64 與 arm64 映像。
