@@ -8,6 +8,8 @@ export function getShowcaseFrameOrigins(value: string | undefined, development =
   if (!value?.trim()) return [];
   const origins = value.split(",").map((origin) => origin.trim());
   for (const origin of origins) {
+    // URL accepts some characters that are delimiters in CSP's grammar.
+    if (/[;\s'"]/.test(origin)) return [];
     try {
       const url = new URL(origin);
       const localDevelopment =
