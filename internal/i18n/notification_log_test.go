@@ -8,7 +8,6 @@ import (
 
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/sirupsen/logrus"
-	"github.com/zitadel/logging"
 	"golang.org/x/text/language"
 )
 
@@ -21,9 +20,7 @@ func TestTranslationWarningDoesNotExposeTemplateData(t *testing.T) {
 		logger.SetLevel(previousLevel)
 		logger.SetFormatter(previousFormatter)
 	})
-	if err := (&logging.Config{Level: "warn"}).SetLogger(); err != nil {
-		t.Fatal(err)
-	}
+	logger.SetLevel(logrus.WarnLevel)
 	logger.SetFormatter(&logrus.TextFormatter{})
 	logger.SetOutput(&captured)
 

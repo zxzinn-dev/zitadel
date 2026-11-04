@@ -3,8 +3,17 @@ FROM node:22-bookworm@sha256:18a6d90fd60542269850c80ca03b29b1d9b14d6b221ac7ee8e3
 COPY --from=go /usr/local/go /usr/local/go
 ENV PATH="/usr/local/go/bin:${PATH}" GOMAXPROCS=2 GOFLAGS="-p=2" NX_DAEMON=false
 WORKDIR /src
-COPY . /src/
-COPY contrib/northbrio/notification-log.patch /tmp/notification-log.patch
+ARG BUILD_DATE
+ARG SOURCE_REVISION
+RUN test "${#SOURCE_REVISION}" -eq 40 \
+    && printf '%s' "${SOURCE_REVISION}" | grep -Eq '^[0-9a-f]{40}$' \
+    && git init -q \
+    && git -c protocol.version=2 fetch -q --depth=1 https://github.com/zxzinn-dev/zitadel.git "${SOURCE_REVISION}" \
+    && git checkout -q --detach FETCH_HEAD \
+    && test "$(git rev-parse HEAD)" = "${SOURCE_REVISION}" \
+    && test "$(date -u -d "@$(git show -s --format=%ct HEAD)" +%Y-%m-%dT%H:%M:%SZ)" = "${BUILD_DATE}" \
+    && cp contrib/northbrio/notification-log.patch /tmp/notification-log.patch \
+    && rm -rf .git
 RUN python3 -c 'import json; p="apps/api/project.json"; d=json.load(open(p)); d["targets"]["generate-install"]["options"]["parallel"]=False; open(p,"w").write(json.dumps(d))' \
     && corepack enable \
     && pnpm install --frozen-lockfile
@@ -17,8 +26,6 @@ RUN cp internal/i18n/translator.go /tmp/translator-patched.go \
     && test "$(grep -Fc 'translation warning contained synthetic data' /tmp/translation-baseline.txt)" -eq 2 \
     && cp /tmp/translator-patched.go internal/i18n/translator.go \
     && go test ./internal/i18n -run '^TestTranslationWarningDoesNotExposeTemplateData$' -count=1
-ARG BUILD_DATE
-ARG SOURCE_REVISION
 RUN test -n "${BUILD_DATE}" \
     && test "$(date -u -d "${BUILD_DATE}" +%Y-%m-%dT%H:%M:%SZ)" = "${BUILD_DATE}" \
     && printf '%s' "${SOURCE_REVISION}" | grep -Eq '^[0-9a-f]{40}$' \
