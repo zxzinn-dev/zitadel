@@ -141,6 +141,11 @@
   color: var(--glass-ink);
 }
 
+.login-stage--aurora .source-offer,
+.login-stage--orbit .source-offer {
+  color: var(--glass-ink);
+}
+
 .login-motion.login-motion--aurora,
 .login-motion.login-motion--orbit {
   position: absolute;

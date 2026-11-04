@@ -1,5 +1,6 @@
 {
   "common": {
+    "sourceCode": "源代码",
     "back": "返回",
     "title": "使用 Zitadel 登录"
   },
