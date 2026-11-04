@@ -1,0 +1,5 @@
+--- a/internal/i18n/translator.go
++++ b/internal/i18n/translator.go
+@@ -169 +169 @@
+-		logging.WithFields("id", id, "args", args).WithError(err).Warnf("missing translation")
++		logging.Warn("missing translation")
