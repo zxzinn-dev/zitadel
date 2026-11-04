@@ -80,7 +80,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                     <div className="login-stage__form">{children}</div>
                     <div className="login-stage__controls mx-auto flex max-w-[440px] flex-wrap items-center justify-between gap-4 px-4 py-4 md:max-w-full md:px-8">
                       <SourceOffer label={t("sourceCode")} />
-                      <div className="flex items-center space-x-4">
+                      <div className="ms-auto flex items-center gap-4">
                         <LanguageSwitcher languages={languages} />
                         <ThemeSwitch />
                       </div>

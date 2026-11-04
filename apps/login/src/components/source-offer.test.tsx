@@ -11,6 +11,7 @@ describe("SourceOffer", () => {
       "href",
       "https://github.com/zxzinn-dev/zitadel/blob/ddc94bda70ec18f7ef09187c9297ba27f0f6bccc/contrib/northbrio/README.md",
     );
+    expect(link).toHaveAttribute("rel", "noreferrer");
     link.focus();
     expect(link).toHaveFocus();
   });
