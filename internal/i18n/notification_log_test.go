@@ -14,13 +14,18 @@ import (
 
 func TestTranslationWarningDoesNotExposeTemplateData(t *testing.T) {
 	var captured bytes.Buffer
+	logger := logrus.StandardLogger()
+	previousOutput, previousLevel, previousFormatter := logger.Out, logger.Level, logger.Formatter
+	t.Cleanup(func() {
+		logger.SetOutput(previousOutput)
+		logger.SetLevel(previousLevel)
+		logger.SetFormatter(previousFormatter)
+	})
 	if err := (&logging.Config{Level: "warn"}).SetLogger(); err != nil {
 		t.Fatal(err)
 	}
-	logger := logrus.StandardLogger()
-	previous := logger.Out
+	logger.SetFormatter(&logrus.TextFormatter{})
 	logger.SetOutput(&captured)
-	t.Cleanup(func() { logger.SetOutput(previous) })
 
 	bundle := i18n.NewBundle(language.English)
 	if err := bundle.AddMessages(language.English, &i18n.Message{ID: "broken", Other: "{{ call .Fail }}"}); err != nil {
@@ -32,15 +37,19 @@ func TestTranslationWarningDoesNotExposeTemplateData(t *testing.T) {
 	for name, id := range map[string]string{"missing": "missing-" + proof + "-" + contact, "execution": "broken"} {
 		t.Run(name, func(t *testing.T) {
 			captured.Reset()
-			args := map[string]interface{}{"Code": proof, "Email": contact, "Fail": func() (string, error) {
-				return "", errors.New(proof + " " + contact)
-			}}
+			args := map[string]interface{}{"Code": proof, "Email": contact}
+			if name == "execution" {
+				args["Fail"] = func() (string, error) { return "", errors.New(proof + " " + contact) }
+			}
 			if got := localize(localizer, id, args); got != id {
 				t.Fatal("unexpected translation fallback")
 			}
 			logs := captured.String()
-			if !strings.Contains(logs, "missing translation") || strings.Contains(logs, proof) || strings.Contains(logs, contact) {
-				t.Fatal("translation warning missing or contained synthetic data")
+			if !strings.Contains(logs, "missing translation") {
+				t.Fatal("translation warning missing")
+			}
+			if strings.Contains(logs, proof) || strings.Contains(logs, contact) {
+				t.Fatal("translation warning contained synthetic data")
 			}
 		})
 	}

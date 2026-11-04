@@ -14,19 +14,21 @@ RUN cp internal/i18n/translator.go /tmp/translator-patched.go \
     && if go test ./internal/i18n -run '^TestTranslationWarningDoesNotExposeTemplateData$' -count=1 >/tmp/translation-baseline.txt 2>&1; then exit 1; fi \
     && grep -Fq -- '--- FAIL: TestTranslationWarningDoesNotExposeTemplateData/missing' /tmp/translation-baseline.txt \
     && grep -Fq -- '--- FAIL: TestTranslationWarningDoesNotExposeTemplateData/execution' /tmp/translation-baseline.txt \
+    && test "$(grep -Fc 'translation warning contained synthetic data' /tmp/translation-baseline.txt)" -eq 2 \
     && cp /tmp/translator-patched.go internal/i18n/translator.go \
     && go test ./internal/i18n -run '^TestTranslationWarningDoesNotExposeTemplateData$' -count=1
 ARG BUILD_DATE
+ARG SOURCE_REVISION
 RUN test -n "${BUILD_DATE}" \
-    && date -u -d "${BUILD_DATE}" >/dev/null \
-    && CGO_ENABLED=0 GOOS=linux go build -o "/src/zitadel" \
-      -ldflags="-s -w -X github.com/zitadel/zitadel/cmd/build.commit=101343ad87ae -X github.com/zitadel/zitadel/cmd/build.date=${BUILD_DATE} -X github.com/zitadel/zitadel/cmd/build.version=v4.19.4+northbrio.4113"
+    && test "$(date -u -d "${BUILD_DATE}" +%Y-%m-%dT%H:%M:%SZ)" = "${BUILD_DATE}" \
+    && printf '%s' "${SOURCE_REVISION}" | grep -Eq '^[0-9a-f]{40}$' \
+    && CGO_ENABLED=0 GOOS=linux go build -trimpath -buildvcs=false -o "/src/zitadel" \
+      -ldflags="-s -w -X github.com/zitadel/zitadel/cmd/build.commit=${SOURCE_REVISION} -X github.com/zitadel/zitadel/cmd/build.date=${BUILD_DATE} -X github.com/zitadel/zitadel/cmd/build.version=v4.19.4+northbrio.4113"
 
 FROM ghcr.io/zitadel/zitadel:v4.19.4@sha256:90a3045b80a2b5b395e1e770302076906af3a5911225af7c464b4f3bd00d0a1b
-ARG BUILD_DATE
+ARG SOURCE_REVISION
 LABEL org.opencontainers.image.version="v4.19.4+northbrio.4113" \
-      org.opencontainers.image.revision="101343ad87aef7b0eea7c3522d519308e0ea9547" \
-      org.opencontainers.image.created="${BUILD_DATE}" \
-      org.opencontainers.image.source="https://github.com/zitadel/zitadel"
-COPY --from=build --chown=zitadel /src/zitadel /app/zitadel
+      org.opencontainers.image.revision="${SOURCE_REVISION}" \
+      org.opencontainers.image.source="https://github.com/zxzinn-dev/zitadel"
+COPY --from=build --chmod=0755 /src/zitadel /app/zitadel
 COPY --from=build /src/LICENSE /licenses/zitadel/LICENSE
